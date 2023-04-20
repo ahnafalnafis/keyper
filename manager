@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+import json
+import random
+import sys
+
+DATABASE = "./db.json"
+
+
+def readDB() -> str:
+    """Reads the database"""
+    with open(DATABASE, "r", encoding="utf-8") as handler:
+        return json.load(handler)
+
+
+def writeDB(content: None) -> None:
+    """Writes to the database"""
+    with open(DATABASE, "w", encoding="utf-8") as handler:
+        json.dump(content, handler)
+
+
+def generate(size: int) -> str:
+    """Generates a unique ID"""
+    rnd = ""
+    size = abs(size) + 1 if size == 0 else abs(size)
+
+    while len(rnd) <= 10:
+        rnd += str(random.choice(range(size * 10)))
+
+    return rnd
+
+
+def create() -> None:
+    """Creates a new password data"""
+    data = readDB()
+
+    sitename = input("Site name or App name: ")
+    username = input("User name: ")
+    password = input("Password: ")
+
+    if sitename != "" and username != "" and password != "":
+        ID = generate(len(data))
+        data[ID] = {}
+        data[ID]["sitename"] = sitename
+        data[ID]["username"] = username
+        data[ID]["password"] = password
+        print("Password saved.")
+
+    else:
+        print("Any placeholder cannot be empty.")
+        print("Password is not saved.")
+
+    writeDB(data)
+
+
+def main() -> None:
+    args = sys.argv[1:]
+    for arg in args:
+        if arg == "create":
+            create()
+
+        else:
+            print(f"Command not found: {arg}")
+
+
+main()
