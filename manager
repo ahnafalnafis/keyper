@@ -62,7 +62,16 @@ def create() -> None:
 
 
 def main() -> None:
-    args = sys.argv[1:]
+    args = []
+
+    # Check whether the script was run only with the script command. If it was
+    # run by any other command then ignore them. Otherwise, only ignore the
+    # script name.
+    if args in ["python", "python3", "py"]:
+        args = sys.argv[2:]
+
+    else:
+        args = sys.argv[1:]
 
     # Store the command. It increases code readability.
     command = args[0]
