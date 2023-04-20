@@ -3,8 +3,16 @@
 import json
 import random
 import sys
+import dotenv
+import os
+from os.path import dirname, join
 
-DATABASE = "./db.json"
+# Loading environment variables from .env file.
+DOTENV_PATH = join(dirname(__file__), ".env")
+dotenv.load_dotenv(DOTENV_PATH)
+
+# Environment variables:
+DATABASE = os.environ.get("DATABASE")
 
 
 def readDB() -> str:
@@ -55,12 +63,16 @@ def create() -> None:
 
 def main() -> None:
     args = sys.argv[1:]
-    for arg in args:
-        if arg == "create":
-            create()
 
-        else:
-            print(f"Command not found: {arg}")
+    # Store the command. It increases code readability.
+    command = args[0]
+
+    # Handles the arguments.
+    if command == "create":
+        create()
+
+    else:
+        print(f"Command not found: {command}")
 
 
 main()

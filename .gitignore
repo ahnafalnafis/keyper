@@ -1,1 +1,6 @@
 db.json
+bin
+lib
+.env
+pyvenv.cfg
+test
