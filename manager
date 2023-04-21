@@ -13,6 +13,7 @@ dotenv.load_dotenv(DOTENV_PATH)
 
 # Environment variables:
 DATABASE = os.environ.get("DATABASE")
+MASTER_KEY = os.environ.get("MASTER_KEY")
 
 
 def readDB() -> str:
@@ -89,4 +90,24 @@ def main() -> None:
         print(f"Command not found: {command}")
 
 
-main()
+# User authentication. Added after issue: #7
+try:
+    userKey = input('Master key: ')
+
+    if userKey == MASTER_KEY:
+        main()
+
+    else:
+        print("Sorry, incorrect password.")
+        exit(1)
+
+# Handle keyboard interruption. Also see issue: #8
+except KeyboardInterrupt:
+    # Sometime error message appears at prompts for some reason. To avoid it,
+    # print a blank line before the error message.
+    print()
+    print('User aborted!!')
+
+# Also handle other errors and give a readable output.
+except Exception as error:
+    print(error)
