@@ -16,98 +16,97 @@ DATABASE = os.environ.get("DATABASE")
 MASTER_KEY = os.environ.get("MASTER_KEY")
 
 
-def readDB() -> str:
+def read_DB() -> str:
     """Reads the database"""
     with open(DATABASE, "r", encoding="utf-8") as handler:
         return json.load(handler)
 
 
-def writeDB(content: None) -> None:
+def write_DB(content: None) -> None:
     """Writes to the database"""
     with open(DATABASE, "w", encoding="utf-8") as handler:
         json.dump(content, handler)
 
 
-def generate(size: int) -> str:
+def generate_UID(size: int) -> str:
     """Generates a unique ID"""
-    rnd = ""
+    uid = ""
     size = abs(size) + 1 if size == 0 else abs(size)
 
-    while len(rnd) <= 10:
-        rnd += str(random.choice(range(size * 10)))
+    while len(uid) <= 10:
+        uid += str(random.choice(range(size * 10)))
+    return uid
 
-    return rnd
+
+def empty(data) -> bool:
+    """Determines whether given data is empty or not."""
+    return data == None
 
 
-def create() -> None:
+def create_new() -> None:
     """Creates a new password data"""
-    data = readDB()
 
-    sitename = input("Site name or App name: ")
-    username = input("User name: ")
-    password = input("Password: ")
+    data = read_DB()
+    sitename = username = password = None
 
-    if sitename != "" and username != "" and password != "":
-        ID = generate(len(data))
-        data[ID] = {}
-        data[ID]["sitename"] = sitename
-        data[ID]["username"] = username
-        data[ID]["password"] = password
-        print("Password saved.")
+    while empty(sitename):
+        sitename = input("Site name or App name: ")
+        if empty(sitename):
+            print("Any placeholder should not be empty.")
 
-    else:
-        print("Any placeholder cannot be empty.")
-        print("Password is not saved.")
+    while empty(username):
+        username = input("User name: ")
+        if empty(username):
+            print("Any placeholder should not be empty.")
 
-    writeDB(data)
+    while empty(password):
+        password = input("Password: ")
+        if empty(password):
+            print("Any placeholder should not be empty.")
+
+    UID = generate_UID(len(data))
+    data[UID] = {
+        "sitename": sitename,
+        "username": username,
+        "password": password
+    }
+
+    print("Password saved.")
+    write_DB(data)
 
 
 def main() -> None:
-    # Check whether the script was run only with the script command. If it was
-    # run by any other command then ignore them. Otherwise, only ignore the
-    # script name. See issue: #2
-    args = []
+    # Ignore any other command that is used to run this program. Resolves #2
+    arguments = sys.argv[1:]
+    if sys.argv[0] in ["python", "python3", "py"]:
+        arguments = sys.argv[2:]
 
-    if args in ["python", "python3", "py"]:
-        args = sys.argv[2:]
-
-    else:
-        args = sys.argv[1:]
-
-    # Warning message if the program is run without any command. See issue: #4
-    if len(args) == 0:
+    # Warn user if the program is run without any command. Resolves #4
+    if len(arguments) == 0:
         print("Expected at least 1 argument, got 0")
-        exit(1)
-
-    # Store the command. It increases code readability.
-    command = args[0]
+        sys.exit(1)
 
     # Handles the arguments.
+    command = arguments[0]
     if command == "create":
-        create()
-
+        create_new()
     else:
         print(f"Command not found: {command}")
 
 
-# User authentication. Added after issue: #7
 try:
-    userKey = input('Master key: ')
-
-    if userKey == MASTER_KEY:
+    # User authentication. Resolves #7
+    user_key = input("Master key: ")
+    if user_key == MASTER_KEY:
         main()
-
     else:
         print("Sorry, incorrect password.")
-        exit(1)
+        sys.exit(1)
 
-# Handle keyboard interruption. Also see issue: #8
 except KeyboardInterrupt:
-    # Sometime error message appears at prompts for some reason. To avoid it,
-    # print a blank line before the error message.
-    print()
-    print('User aborted!!')
+    # Handle keyboard interruption. Fixes #8
+    print("\n", "User aborted!!")
 
-# Also handle other errors and give a readable output.
 except Exception as error:
+    # Give a readable error message.
     print(error)
