@@ -47,11 +47,11 @@ def create_new() -> None:
     """Creates a new password data"""
 
     data = read_DB()
-    sitename = username = password = None
+    app_name = username = password = None
 
-    while empty(sitename):
-        sitename = input("Site name or App name: ")
-        if empty(sitename):
+    while empty(app_name):
+        app_name = input("App name: ")
+        if empty(app_name):
             print("Any placeholder should not be empty.")
 
     while empty(username):
@@ -66,7 +66,7 @@ def create_new() -> None:
 
     UID = generate_UID(len(data))
     data[UID] = {
-        "sitename": sitename,
+        "app_name": app_name,
         "username": username,
         "password": password
     }
