@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import json
+import os
+from os.path import dirname, join, exists
 import random
 import sys
+
 import dotenv
-import os
-from os.path import dirname, join
 
 # Loading environment variables from .env file.
 DOTENV_PATH = join(dirname(__file__), ".env")
@@ -16,13 +17,30 @@ DATABASE = os.environ.get("DATABASE")
 MASTER_KEY = os.environ.get("MASTER_KEY")
 
 
-def read_DB() -> str:
+def load_json(file, mode, callback, encoding="utf-8") -> None:
+    """
+    Loads the JSON file. If the JSON file doesn't exist then it creates a new
+    one.
+    """
+    if not exists(file):
+        with open(file, "x", encoding=encoding) as handler:
+            handler.close()
+
+    with open(file=file, mode=mode, encoding=encoding) as handler:
+        callback(handler)
+
+
+def readDB() -> str:
     """Reads the database"""
-    with open(DATABASE, "r", encoding="utf-8") as handler:
-        return json.load(handler)
+    # with open(DATABASE, "r", encoding="utf-8") as handler:
+    #     return json.load(handler)
+
+    def callback() -> None: ...
+
+    load_json(DATABASE, "r", callback)
 
 
-def write_DB(content: None) -> None:
+def writeDB(content: None) -> None:
     """Writes to the database"""
     with open(DATABASE, "w", encoding="utf-8") as handler:
         json.dump(content, handler)
@@ -40,13 +58,13 @@ def generate_UID(size: int) -> str:
 
 def empty(data) -> bool:
     """Determines whether given data is empty or not."""
-    return data == None
+    return data is None
 
 
 def create_new() -> None:
     """Creates a new password data"""
 
-    data = read_DB()
+    data = readDB()
     app_name = username = password = None
 
     while empty(app_name):
@@ -72,22 +90,22 @@ def create_new() -> None:
     }
 
     print("Password saved.")
-    write_DB(data)
+    writeDB(data)
 
 
 def main() -> None:
-    # Ignore any other command that is used to run this program. Resolves #2
     arguments = sys.argv[1:]
+
     if sys.argv[0] in ["python", "python3", "py"]:
         arguments = sys.argv[2:]
 
-    # Warn user if the program is run without any command. Resolves #4
     if len(arguments) == 0:
         print("Expected at least 1 argument, got 0")
         sys.exit(1)
 
     # Handles the arguments.
     command = arguments[0]
+
     if command == "create":
         create_new()
     else:
@@ -95,18 +113,18 @@ def main() -> None:
 
 
 try:
-    # User authentication. Resolves #7
+    # User authentication
     user_key = input("Master key: ")
+
     if user_key == MASTER_KEY:
         main()
-    else:
-        print("Sorry, incorrect password.")
-        sys.exit(1)
+        sys.exit(0)
+
+    print("Sorry, incorrect password.")
+    sys.exit(1)
 
 except KeyboardInterrupt:
-    # Handle keyboard interruption. Fixes #8
     print("\n", "User aborted!!")
 
 except Exception as error:
-    # Give a readable error message.
     print(error)
